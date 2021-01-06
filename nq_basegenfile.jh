@@ -1,0 +1,112 @@
+entity KafkaConnectorInfo {
+	type String required maxlength(255),
+	lastSyncDate Instant required,
+	lastLeader String maxlength(255)
+}
+
+entity Model {
+	id Blob required,
+	createdDate Instant required,
+	lastModifiedDate Instant,
+	code String required maxlength(255),
+	contentType String required maxlength(255),
+	filename String maxlength(255),
+	name String required maxlength(255),
+	template Blob required,
+	versionMajor Integer required,
+	versionMinor Integer required,
+	storageType String maxlength(255),
+	needCachet Boolean
+}
+
+entity ModelCustomFields {
+	description String maxlength(255),
+	publicName String maxlength(255),
+	required Boolean,
+	technicalName String maxlength(255),
+	type String maxlength(255)
+}
+
+entity ModelPanamaConfig {
+	id Blob required,
+	generateUniquePath Boolean required,
+	metadataTemplate Blob,
+	path String maxlength(255),
+	filename String maxlength(255)
+}
+
+entity PanamaBucket {
+	id Blob required,
+	createdDate Instant required,
+	lastModifiedDate Instant,
+	bucketName String required maxlength(255),
+	code String required maxlength(255),
+	name String required maxlength(255)
+}
+
+entity Partner {
+	id Blob required,
+	createdDate Instant required,
+	lastModifiedDate Instant,
+	code String required maxlength(255),
+	name String required maxlength(255)
+}
+
+entity User {
+	id Blob required,
+	partners String maxlength(255),
+	username String required maxlength(255),
+	userType String required maxlength(12),
+	createdDate Instant required,
+	lastModifiedDate Instant
+}
+
+// Relations
+relationship OneToMany {
+	Partner{model} to Model{partner}
+}
+
+relationship ManyToOne {
+	Model{panamaConfig} to ModelPanamaConfig{model}
+}
+
+relationship ManyToOne {
+	ModelCustomFields{model required} to Model{modelCustomFields}
+}
+
+relationship ManyToOne {
+	ModelPanamaConfig{bucket required} to PanamaBucket{modelPanamaConfig}
+}
+
+relationship ManyToOne {
+	PanamaBucket{createdBy required} to User{panamaBucket}
+}
+
+relationship ManyToOne {
+	PanamaBucket{lastModifiedBy} to User{panamaBucket}
+}
+
+relationship ManyToOne {
+	Partner{createdBy required} to User{partner}
+}
+
+relationship ManyToOne {
+	Partner{lastModifiedBy} to User{partner}
+}
+
+// TODO This is a pure ManyToMany relation (delete me and decide owner side)
+relationship ManyToMany {
+	PartnerPanamaBuckets{partner required} to Partner{partnerPanamaBuckets}
+}
+
+// TODO This is a pure ManyToMany relation (delete me and decide owner side)
+relationship ManyToMany {
+	PartnerPanamaBuckets{panamaBuckets required} to PanamaBucket{partnerPanamaBuckets}
+}
+
+// Options
+service * with serviceClass
+paginate * with pagination
+dto * with mapstruct
+filter *
+
