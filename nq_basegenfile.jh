@@ -1,0 +1,224 @@
+entity Audit {
+	id Blob required,
+	createdDate Instant required,
+	message String maxlength(500),
+	sendId Blob,
+	type String required maxlength(50)
+}
+
+entity Databasechangelog {
+	id String required maxlength(255),
+	author String required maxlength(255),
+	filename String required maxlength(255),
+	dateexecuted Instant required,
+	orderexecuted Integer required,
+	exectype String required maxlength(10),
+	md5sum String maxlength(35),
+	description String maxlength(255),
+	comments String maxlength(255),
+	tag String maxlength(255),
+	liquibase String maxlength(20),
+	contexts String maxlength(255),
+	labels String maxlength(255),
+	deploymentId String maxlength(10)
+}
+
+entity Databasechangeloglock {
+	id Integer required,
+	locked Boolean required,
+	lockgranted Instant,
+	lockedby String maxlength(255)
+}
+
+entity Event {
+	id Blob required,
+	createdDate Instant required,
+	message String maxlength(500),
+	sendId Blob,
+	type String required maxlength(50)
+}
+
+entity GenFile {
+	id Blob required,
+	createdDate Instant required,
+	lastModifiedDate Instant,
+	context Blob,
+	data Blob,
+	tags String maxlength(500),
+	dataDecoded String maxlength(5000)
+}
+
+entity KafkaConnectorInfo {
+	type String required maxlength(255),
+	lastSyncDate Instant required,
+	lastLeader String maxlength(255)
+}
+
+entity LeaderElection {
+	name String required maxlength(255),
+	lastSyncDate Instant required,
+	lastLeader String required maxlength(255)
+}
+
+entity Model {
+	id Blob required,
+	createdDate Instant required,
+	lastModifiedDate Instant,
+	code String required maxlength(255),
+	contentType String required maxlength(255),
+	filename String maxlength(255),
+	name String required maxlength(255),
+	template Blob required,
+	versionMajor Integer required,
+	versionMinor Integer required,
+	storageType String maxlength(255),
+	needCachet Boolean
+}
+
+entity ModelCustomFields {
+	description String maxlength(255),
+	publicName String maxlength(255),
+	required Boolean,
+	technicalName String maxlength(255),
+	type String maxlength(255)
+}
+
+entity ModelPanamaConfig {
+	id Blob required,
+	generateUniquePath Boolean required,
+	metadataTemplate Blob,
+	path String maxlength(255),
+	filename String maxlength(255)
+}
+
+entity PanamaBucket {
+	id Blob required,
+	createdDate Instant required,
+	lastModifiedDate Instant,
+	bucketName String required maxlength(255),
+	code String required maxlength(255),
+	name String required maxlength(255)
+}
+
+entity Partner {
+	id Blob required,
+	createdDate Instant required,
+	lastModifiedDate Instant,
+	code String required maxlength(255),
+	name String required maxlength(255)
+}
+
+entity Token {
+	id Blob required,
+	createdDate Instant required,
+	lastModifiedDate Instant,
+	nbAttempts Integer,
+	token String required maxlength(255)
+}
+
+entity User {
+	id Blob required,
+	partners String maxlength(255),
+	username String required maxlength(255),
+	userType String required maxlength(12),
+	createdDate Instant required,
+	lastModifiedDate Instant
+}
+
+
+
+// Relations
+relationship ManyToOne {
+	Audit{genFile required} to GenFile{audit}
+}
+
+relationship ManyToOne {
+	Event{genFile required} to GenFile{event}
+}
+
+relationship ManyToOne {
+	GenFile{createdBy required} to User{genFile}
+}
+
+relationship ManyToOne {
+	GenFile{lastModifiedBy} to User{genFile}
+}
+
+relationship ManyToOne {
+	GenFile{model required} to Model{genFile}
+}
+
+relationship ManyToOne {
+	GenFile{partner required} to Partner{genFile}
+}
+
+relationship ManyToOne {
+	Model{createdBy required} to User{model}
+}
+
+relationship ManyToOne {
+	Model{lastModifiedBy} to User{model}
+}
+
+relationship ManyToOne {
+	Model{partner required} to Partner{model}
+}
+
+relationship ManyToOne {
+	Model{panamaConfig} to ModelPanamaConfig{model}
+}
+
+relationship ManyToOne {
+	ModelCustomFields{model required} to Model{modelCustomFields}
+}
+
+relationship ManyToOne {
+	ModelPanamaConfig{bucket required} to PanamaBucket{modelPanamaConfig}
+}
+
+relationship ManyToOne {
+	PanamaBucket{createdBy required} to User{panamaBucket}
+}
+
+relationship ManyToOne {
+	PanamaBucket{lastModifiedBy} to User{panamaBucket}
+}
+
+relationship ManyToOne {
+	Partner{createdBy required} to User{partner}
+}
+
+relationship ManyToOne {
+	Partner{lastModifiedBy} to User{partner}
+}
+
+// TODO This is a pure ManyToMany relation (delete me and decide owner side)
+relationship ManyToMany {
+	PartnerPanamaBuckets{partner required} to Partner{partnerPanamaBuckets}
+}
+
+// TODO This is a pure ManyToMany relation (delete me and decide owner side)
+relationship ManyToMany {
+	PartnerPanamaBuckets{panamaBuckets required} to PanamaBucket{partnerPanamaBuckets}
+}
+
+relationship ManyToOne {
+	Token{createdBy required} to User{token}
+}
+
+relationship ManyToOne {
+	Token{lastModifiedBy} to User{token}
+}
+
+relationship ManyToOne {
+	Token{genFile required} to GenFile{token}
+}
+
+
+
+// Options
+service * with serviceClass
+paginate * with pagination
+dto * with mapstruct
+filter *
+
